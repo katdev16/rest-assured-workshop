@@ -4,6 +4,8 @@ import com.github.tomakehurst.wiremock.extension.responsetemplating.ResponseTemp
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import dataentities.Account;
+import dataentities.AccountResponse;
+import dataentities.Customer;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
@@ -47,11 +49,14 @@ public class RestAssuredExercises5Test {
 
     @Test
     public void postAccountObject_checkResponseHttpStatusCode_expect201() {
+        Account account = new Account("savings");
 
         given().
-            spec(requestSpec).
+            spec(requestSpec).body(account).
         when().
-        then();
+                post("/customer/12212/accounts").
+        then().
+        statusCode(201);
     }
 
     /*******************************************************
@@ -66,10 +71,14 @@ public class RestAssuredExercises5Test {
 
     @Test
     public void getAccountsForCustomer12212_deserializeIntoList_checkListSize_shouldEqual3() {
-
+        AccountResponse accountResponse =
         given().
             spec(requestSpec).
-        when();
+        when().get("/customer/12212/accounts").
+                then().log().body().
+                and().
+                extract().body().as(AccountResponse.class);
+        assertEquals(3,accountResponse.getAccounts().size());
     }
 
     /*******************************************************
@@ -89,9 +98,15 @@ public class RestAssuredExercises5Test {
 
     @Test
     public void postCustomerObject_checkReturnedFirstAndLastName_expectSuppliedValues() {
+        Customer customer = new Customer("Katlego","Dhlamini");
 
+        Customer createdCustomer =
         given().
-            spec(requestSpec).
-        when();
+            spec(requestSpec).and().body(customer).
+        when().post("/customer"). as(Customer.class);
+
+
+        assertEquals(createdCustomer.getFirstName(),"Katlego");
+        assertEquals(createdCustomer.getLastName(),"Dhlamini");
     }
 }

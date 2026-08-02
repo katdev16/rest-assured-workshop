@@ -9,6 +9,8 @@ import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 @WireMockTest(httpPort = 9876)
 public class RestAssuredExercises4Test {
 
@@ -41,7 +43,9 @@ public class RestAssuredExercises4Test {
         given().
             spec(requestSpec).
         when().
-        then();
+                get("/xml/customer/12212/accounts").
+        then().
+        log().body().and().assertThat().body("accounts.account[0].id",equalTo("12345"));
     }
 
     /*******************************************************
@@ -62,7 +66,9 @@ public class RestAssuredExercises4Test {
         given().
             spec(requestSpec).
         when().
-        then();
+                get("/xml/customer/12212/accounts").
+        then().
+                log().body().and().assertThat().body("accounts.account[-2].balance",equalTo("43.21"));;
     }
 
     /*******************************************************
@@ -82,7 +88,9 @@ public class RestAssuredExercises4Test {
         given().
             spec(requestSpec).
         when().
-        then();
+                get("/xml/customer/12212/accounts").
+        then().
+                log().body().and().assertThat().body("accounts.account.findAll{it.type=='checking'}",hasSize(3));;;
     }
 
 
@@ -104,6 +112,11 @@ public class RestAssuredExercises4Test {
         given().
             spec(requestSpec).
         when().
-        then();
+                get("/xml/customer/12212/accounts").
+        then().
+                log().body().
+                and().
+                assertThat().body("accounts.account.id.grep(~/5.*/)",hasSize(2));
+
     }
 }

@@ -6,9 +6,14 @@ import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import java.util.HashMap;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.request;
+import static org.hamcrest.Matchers.*;
 
 @WireMockTest(httpPort = 9876)
 public class RestAssuredExercises6Test {
@@ -43,6 +48,8 @@ public class RestAssuredExercises6Test {
     @Test
     public void getFruitData_checkFruitAndTreeName_shouldBeAppleAndMalus() {
 
+        HashMap<String,Object> graphQlQuery = new HashMap<>();
+
         String queryString = """
                 {
                     fruit(id: 1) {
@@ -52,11 +59,18 @@ public class RestAssuredExercises6Test {
                     }
                 }
                 """;
+        graphQlQuery.put("query",queryString);
 
         given().
-            spec(requestSpec).
-        when().
-        then();
+            spec(requestSpec).body(graphQlQuery).
+        when().post("/graphql").
+        then().
+                log().body().
+                and().
+                assertThat().
+                body("data.fruit.fruit_name",equalTo("Apple")).
+                and().
+                body("data.fruit.tree_name",equalTo("Malus"));
     }
 
     /*******************************************************
@@ -87,8 +101,14 @@ public class RestAssuredExercises6Test {
      * expression to extract the required value from the response
      ******************************************************/
 
-    @Test
-    public void getFruitDataById_checkFruitNameAndTreeName() {
+    @ParameterizedTest
+    @CsvSource({
+            "1, Apple, Malus",
+            "2, Pear, Pyrus",
+            "3, Banana, Musa"
+    })
+
+    public void getFruitDataById_checkFruitNameAndTreeName(int id, String expectedFruitName,String expectedTreeName) {
 
         String queryString = """
                 query GetFruit($id: ID!)
@@ -100,10 +120,23 @@ public class RestAssuredExercises6Test {
                     }
                 }
                 """;
+        HashMap<String,Object> variables = new HashMap<>();
+        variables.put("id",id);
+
+
+        HashMap<String,Object> graphQlQuery = new HashMap<>();
+
+        graphQlQuery.put("query",queryString);
+        graphQlQuery.put("variables",variables);
 
         given().
-            spec(requestSpec).
-        when().
-        then();
+            spec(requestSpec).body(graphQlQuery).
+        when().post("/graphql").
+        then().
+                statusCode(200).
+                and().log().body().
+                and().assertThat().
+                body("data.fruit.fruit_name",equalTo(expectedFruitName)).
+                body("data.fruit.tree_name",equalTo(expectedTreeName));
     }
 }

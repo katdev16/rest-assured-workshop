@@ -46,31 +46,45 @@ public class RestAssuredExercises2Test {
      * Use the GPath expressions "firstName" and "lastName",
      * respectively, to extract the required response body elements
      ******************************************************/
-
-    @Test
-    public void requestDataForCustomer12212_checkNames_expectJohnSmith() {
+    @ParameterizedTest
+    @CsvSource({
+        "12212,John,Smith",
+        "12323,Susan,Holmes",
+        "14545,Anna,Grant"
+    })
+    public void requestDataForCustomer12212_checkNames_expectJohnSmith(int custormerId,String firstName, String lastName) {
 
         given().
             spec(requestSpec).
+                pathParam("custormerId",custormerId).
         when().
-            get("/customer/12212").
+            get("/customer/{custormerId}").
         then().
+                log().body().and().
             assertThat().
-            body("firstName", equalTo("John")).
-            body("lastName", equalTo("Smith"));
+            body("firstName", equalTo(firstName)).
+            body("lastName", equalTo(lastName));
     }
 
-    @Test
-    public void requestDataForCustomer12323_checkNames_expectSusanHolmes() {
+    @ParameterizedTest
+    @CsvSource({
+            "12212,John,Smith",
+            "12323,Susan,Holmes",
+            "14545,Anna,Grant"
+    })
+    public void requestDataForCustomer12323_checkNames_expectSusanHolmes(
+            int custormerId,String ExpectedfirstName, String ExpectedlastName
+    ) {
 
         given().
             spec(requestSpec).
+                pathParam("custormerId",custormerId).
         when().
-            get("/customer/12323").
+            get("/customer/{custormerId}").
         then().
             assertThat().
-            body("firstName", equalTo("Susan")).
-            body("lastName", equalTo("Holmes"));
+            body("firstName", equalTo(ExpectedfirstName)).
+            body("lastName", equalTo(ExpectedlastName));
     }
 
     @Test

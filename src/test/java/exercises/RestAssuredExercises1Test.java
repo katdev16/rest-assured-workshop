@@ -1,6 +1,7 @@
 package exercises;
 
 import static io.restassured.RestAssured.*;
+import static net.javacrumbs.jsonunit.core.ConfigurationWhen.then;
 import static org.hamcrest.Matchers.*;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -35,7 +36,10 @@ public class RestAssuredExercises1Test {
 		given().
 			spec(requestSpec).
 		when().
-		then();
+				get("customer/12212").
+		then().
+				assertThat().
+				statusCode(200);
 	}
 
 	/*******************************************************
@@ -49,7 +53,9 @@ public class RestAssuredExercises1Test {
 		given().
 			spec(requestSpec).
 		when().
-		then();
+				get("customer/99999").
+		then()
+				.assertThat().statusCode(404);
 	}
 
 	/*******************************************************
@@ -61,10 +67,13 @@ public class RestAssuredExercises1Test {
 	@Test
 	public void requestDataForCustomer12212_checkContentType_expectApplicationJson() {
 
-		given().
-			spec(requestSpec).
-		when().
-		then();
+		given()
+			.spec(requestSpec).
+		when()
+			.get("/customer/12212").
+		then()
+				.assertThat()
+				.contentType("application/json");
 	}
 
 	/***********************************************
@@ -82,7 +91,11 @@ public class RestAssuredExercises1Test {
 		given().
 			spec(requestSpec).
 		when().
-		then();
+				get("/customer/12212").
+		then().
+				log().body().and().
+		assertThat().
+		body("firstName",equalTo("John"));
 	}
 
 	/***********************************************
@@ -100,7 +113,12 @@ public class RestAssuredExercises1Test {
 		given().
 			spec(requestSpec).
 		when().
-		then();
+				get("/customer/12212").
+		then().
+				log().body().
+				and().
+				assertThat().
+				body("address.city",equalTo("Beverly Hills"));
 	}
 
 	/***********************************************
@@ -118,7 +136,10 @@ public class RestAssuredExercises1Test {
 		given().
 			spec(requestSpec).
 		when().
-		then();
+				get("/customer/12212/accounts").
+		then().
+		log().body().and().
+		body("accounts.id",hasItem(12345));
 	}
 
 	/***********************************************
@@ -136,7 +157,9 @@ public class RestAssuredExercises1Test {
 		given().
 			spec(requestSpec).
 		when().
-		then();
+				get("/customer/12212/accounts").
+		then().
+		body("accounts.id",not(hasItem(99999)));
 	}
 
 	/***********************************************
@@ -154,6 +177,8 @@ public class RestAssuredExercises1Test {
 		given().
 			spec(requestSpec).
 		when().
-		then();
+				get("/customer/12212/accounts").
+		then().
+		body("accounts.id", hasSize(3));
 	}
 }

@@ -4,19 +4,25 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import dataentities.Photo;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import org.eclipse.jetty.http.HttpTester;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.Matchers.*;
 
 @WireMockTest(httpPort = 9876)
 public class RestAssuredExercises7Test {
 
+    private static final Logger log = LoggerFactory.getLogger(RestAssuredExercises7Test.class);
     private RequestSpecification requestSpec;
 
     @BeforeEach
@@ -40,17 +46,21 @@ public class RestAssuredExercises7Test {
          *
          * Store the user id in a variable of type int
          ******************************************************/
+        int id =
 
             given().
                 spec(requestSpec).
             when().
-            then();
+                    get("/users").
+            then().extract().path("find { it.username == 'Karianne'}.id");
+        System.out.println(id);
+
 
         /*******************************************************
          * Use a JUnit assertEquals to verify that the userId
          * is equal to 4
          ******************************************************/
-
+        assertEquals(id,4,"incorrect ID");
 
 
         /*******************************************************
@@ -61,16 +71,20 @@ public class RestAssuredExercises7Test {
          *
          * Store these in a variable of type List<Integer>.
          ******************************************************/
+        List<Integer> albums =
 
             given().
                 spec(requestSpec).
             when().
-            then();
+                    get(" /albums").
+            then().extract().path("findAll {it.userId == 4 }.id");
+        System.out.println(albums);
 
         /*******************************************************
          * Use a JUnit assertEquals to verify that the list has
          * exactly 10 items (hint: use the size() method)
          ******************************************************/
+        assertEquals(albums.size(),10);
 
 
 
@@ -87,9 +101,21 @@ public class RestAssuredExercises7Test {
          * (the accepted answer should help you solve this one).
          ******************************************************/
 
+
+        List<Integer> noId =
             given().
                 spec(requestSpec).
-            when();
+            when().get(" /albums").
+                    then().extract().path("findAll {it.userId == 4 }.id");;
+
+        Response response =
+            given().
+                spec(requestSpec).pathParam("id",albums.get(4)).
+                    when()
+                .get("albums/{id}/photos");
+
+        List<Photo> photos = Arrays.asList(response.getBody().as(Photo[].class));
+
 
         /*******************************************************
          * Use a JUnit assertEquals to verify that the title of
@@ -98,6 +124,7 @@ public class RestAssuredExercises7Test {
          * Hint: use the get() method to retrieve an object with a
          * specific index from a List
          ******************************************************/
+        assertEquals("pariatur sunt eveniet",photos.get(31).getTitle());
 
 
     }

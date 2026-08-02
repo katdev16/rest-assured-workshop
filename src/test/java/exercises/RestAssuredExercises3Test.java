@@ -38,15 +38,18 @@ public class RestAssuredExercises3Test {
 
     @Test
     public void getTokenUsingBasicAuth_extractFromResponse_thenReuseAsOAuthToken() {
-
+        String token =
         given().
             spec(requestSpec).
+                auth().preemptive().basic("john","demo").
         when().
-        then();
+                get("/token").jsonPath().getString("token");
+
 
         given().
-            spec(requestSpec).
+            spec(requestSpec).auth().oauth2(token).
         when().
-        then();
+                get("/secure/customer/12212").
+        then().statusCode(200);
     }
 }
